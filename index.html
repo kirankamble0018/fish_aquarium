@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>PET SHOP - Pet Shop Website Template</title>
+    <title>Fish Aquarium Shop Website</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <meta content="Free HTML Templates" name="keywords" />
     <meta content="Free HTML Templates" name="description" />
@@ -12,10 +12,12 @@
 
     <!-- Google Web Fonts -->
     <link rel="preconnect" href="https://fonts.gstatic.com" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link
       href="https://fonts.googleapis.com/css2?family=Poppins&family=Roboto:wght@700&display=swap"
       rel="stylesheet"
     />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
     <!-- Icon Font Stylesheet -->
     <link
@@ -33,6 +35,23 @@
     <!-- Template Stylesheet -->
     <link href="css/style.css" rel="stylesheet" />
     <style>
+      * {
+  box-sizing: border-box;
+}
+
+/* Create two equal columns that floats next to each other */
+.column {
+  /* float: left; */
+  width: 50%;
+  padding: 10px;
+}
+
+/* Clear floats after the columns */
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
       .btn {
         background-color: inherit;
         padding: 14px 28px;
@@ -55,10 +74,154 @@
         background: #ff9800;
         color: white;
       }
+      form.example input[type=text] {
+  padding: 10px;
+  font-size: 17px;
+  border: 1px solid grey;
+  float: left;
+  width: 80%;
+  background: #f1f1f1;
+}
+
+form.example button {
+  float: left;
+  width: 20%;
+  padding: 10px;
+  background: #2196F3;
+  color: white;
+  font-size: 17px;
+  border: 1px solid grey;
+  border-left: none;
+  cursor: pointer;
+}
+
+form.example button:hover {
+  background: #0b7dda;
+}
+
+form.example::after {
+  content: "";
+  clear: both;
+  display: table;
+}
+
     </style>
+
+
+
   </head>
 
-  <body>
+  <body onload="getAllListApiCall()">
+    <script src="https://www.gstatic.com/firebasejs/8.1.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.1.1/firebase-database.js"></script>
+     <script>
+      // Your web app's Firebase configuration
+      const firebaseConfig = {
+        apiKey: "AIzaSyCoZk-koS5ysf8dS60mTv02yG3pdgvkLk0",
+        authDomain: "testproject-492ea.firebaseapp.com",
+        projectId: "testproject-492ea",
+        storageBucket: "testproject-492ea.appspot.com",
+        messagingSenderId: "648446209038",
+        appId: "1:648446209038:web:fdc00ed8a0d549b19e605f",
+        measurementId: "G-8J4SXQYKTV",
+        
+      };
+      // Initialize Firebase
+      firebase.initializeApp(firebaseConfig);
+
+      function getAllListApiCall(){
+        firebase
+        .database()
+        .ref("fishTankLink").on("value", (sanpshot) => {
+          var str = JSON.stringify(sanpshot.val())
+          var json = JSON.parse(str)
+          var jsonArray = []
+          for (var key in json) {
+            if (json.hasOwnProperty(key)) {
+                var value = json[key];
+                if (value != null && value != undefined) {
+                  jsonArray.push(value)
+                }
+            }
+        }
+          console.log("response from backend",jsonArray)
+          updateUiForResponseList(jsonArray)
+        });
+      }
+      function searchApiCall(){
+        
+        var searchText = document.getElementById("search").value;
+        firebase
+        .database()
+        .ref("fishTankLink").orderByChild('name').startAt(searchText).endAt(searchText + 'b\uf8ff').on("value", (sanpshot) => {
+          var str = JSON.stringify(sanpshot.val())
+          var json = JSON.parse(str)
+          var jsonArray = []
+          for (var key in json) {
+            if (json.hasOwnProperty(key)) {
+                var value = json[key];
+                if (value != null && value != undefined) {
+                  jsonArray.push(value)
+                }
+            }
+        }
+          console.log("search response from backend",jsonArray)
+          updateUiForResponseList(jsonArray)
+        });
+      }
+     
+      function updateUiForResponseList(jsonArray){
+        var list = document.getElementById("myList");
+          while (list.hasChildNodes()) {
+            list.removeChild(list.firstChild);
+          }
+          for (var i =0;i<jsonArray.length;i++) {
+            var item = jsonArray[i];
+         
+          var daString=`
+          <div>
+            <div class="blog-item">
+              <div class="row g-0 bg-light overflow-hidden">
+                <div class="col-12 col-sm-5 h-100">
+                  <img
+                    class="img-fluid h-100"
+                    src="` + item["img"] + `"
+                    style="object-fit: cover"
+                  />
+                </div>
+                <div
+                  class="col-9 col-sm-7 h-100 d-flex flex-column justify-content-center"
+                >
+                  <div class="p-4">
+                    <h6 class="text-uppercase mb-3">
+                      `+ item["name"] +`
+                    </h6>
+                    <p></p>
+                    <p></p>
+                    <p style="color: red; font-size: 18px">₹ ` + item["price"]+`</p>
+                    <p style="color: black; font-size: 15px">M.R.P.: <span style="text-decoration: line-through;">₹`+item["mrp"]+` </span> </p>
+                    <p style="color: black; font-size: 18px">
+                      Inclusive of all taxes
+                    </p>
+                    <button class="btn add">Buy Now</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+
+
+       
+          var newNode = document.createElement('div');
+                newNode.className = 'column';
+                newNode.innerHTML = daString;
+                    list.appendChild(newNode);
+          }
+         
+      }
+    </script>
+
     <!-- Topbar Start -->
     <div class="container-fluid border-bottom d-none d-lg-block">
       <div class="row gx-0">
@@ -249,262 +412,14 @@
             Our Excellent Fish Tank Services
           </h1>
         </div>
-        <div class="row g-5">
-          <div class="col-lg-6">
-            <div class="blog-item">
-              <div class="row g-0 bg-light overflow-hidden">
-                <div class="col-12 col-sm-5 h-100">
-                  <img
-                    class="img-fluid h-100"
-                    src="img/tank-1.jpg"
-                    style="object-fit: cover"
-                  />
-                </div>
-                <div
-                  class="col-9 col-sm-7 h-100 d-flex flex-column justify-content-center"
-                >
-                  <div class="p-4">
-                    <h6 class="text-uppercase mb-3">
-                        Fish Aquarium Tank Capacity 20 Liter
-                        (Colour May Vary, black, Rust Resistant) LXWXH
-                        16''X8''X17'' INCH
-                    </h6>
-                    <p></p>
-                    <p></p>
-                    <p style="color: red; font-size: 18px">₹ 3000</p>
-                    <p style="color: black; font-size: 15px">M.R.P.: <span style="text-decoration: line-through;">₹2,166 </span> </p>
-                    <p style="color: black; font-size: 18px">
-                      Inclusive of all taxes
-                    </p>
-                    <button class="btn add">Buy Now</button>
-                 
-                    
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="col-lg-6">
-            <div class="blog-item">
-              <div class="row g-0 bg-light overflow-hidden">
-                <div class="col-12 col-sm-5 h-100">
-                  <img
-                    class="img-fluid h-100"
-                    src="img/tank-2.jpg"
-                    style="object-fit: cover"
-                  />
-                </div>
-                <div
-                  class="col-9 col-sm-7 h-100 d-flex flex-column justify-content-center"
-                >
-                  <div class="p-4">
-                    <h6 class="text-uppercase mb-3">
-                    Fish Aquarium Tank Capacity 28 Liter
-                      (Colour green, Rust Resistant) LXWXH
-                      16''X8''X17'' INCH
-                    </h6>
-                    <p></p>
-                    <p></p>
-                    <p style="color: red; font-size: 18px">₹ 5000</p>
-                    <p style="color: black; font-size: 15px">M.R.P.: <span style="text-decoration: line-through;">₹8000 </span> </p>
-                    <p style="color: black; font-size: 18px">
-                      Inclusive of all taxes
-                    </p>
-                    <button class="btn add">Buy Now</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="col-lg-6">
-            <div class="blog-item">
-              <div class="row g-0 bg-light overflow-hidden">
-                <div class="col-12 col-sm-5 h-100">
-                  <img
-                    class="img-fluid h-100"
-                    src="img/tank-3.jpg"
-                    style="object-fit: cover"
-                  />
-                </div>
-                <div
-                  class="col-9 col-sm-7 h-100 d-flex flex-column justify-content-center"
-                >
-                  <div class="p-4">
-                    
-                    <h6 class="text-uppercase mb-3">
-                        Jainsons Pet Products Round Transparent Crystal Glass Zig
-                      Zag Neck Bowl ish Tank Water Jar with
-                      Lotus ( Rust Resistant, Pack of One )
-                        </h6>
-                        <p></p>
-                        <p></p>
-                        <p style="color: red; font-size: 18px">₹ 600</p>
-                        <p style="color: black; font-size: 15px">M.R.P.: ₹600<span style="text-decoration: line-through;"></span> </p>
-                        <p style="color: black; font-size: 18px">
-                          Inclusive of all taxes
-                        </p>
-                        <button class="btn add">Buy Now</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="col-lg-6">
-            <div class="blog-item">
-              <div class="row g-0 bg-light overflow-hidden">
-                <div class="col-12 col-sm-5 h-100">
-                  <img
-                    class="img-fluid h-100"
-                    src="img/tank-4.jpg"
-                    style="object-fit: cover"
-                  />
-                </div>
-                <div
-                  class="col-9 col-sm-7 h-100 d-flex flex-column justify-content-center"
-                >
-                  <div class="p-4">
-                    <h6 class="text-uppercase mb-3">
-                        Tank Capacity 28 Liter
-                          (Colour green, Rust Resistant) LXWXH
-                          16''X8''X17'' INCH
-                        </h6>
-                        <p></p>
-                        <p></p>
-                        <p style="color: red; font-size: 18px">₹ 2000</p>
-                        <p style="color: black; font-size: 15px">M.R.P.: <span style="text-decoration: line-through;">₹2500 </span> </p>
-                        <p style="color: black; font-size: 18px">
-                          Inclusive of all taxes
-                        </p>
-                        <button class="btn add">Buy Now</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="col-lg-6">
-            <div class="blog-item">
-              <div class="row g-0 bg-light overflow-hidden">
-                <div class="col-12 col-sm-5 h-100">
-                  <img
-                    class="img-fluid h-100"
-                    src="img/tank-5.jpg"
-                    style="object-fit: cover"
-                  />
-                </div>
-                <div
-                  class="col-9 col-sm-7 h-100 d-flex flex-column justify-content-center"
-                >
-                  <div class="p-4">
-                    <h6 class="text-uppercase mb-3">
-                        Tank Capacity 28 Liter, transparent colored
-                          16''X8''X17'' INCH
-                        </h6>
-                        <p></p>
-                        <p></p>
-                        <p style="color: red; font-size: 18px">₹ 3000</p>
-                        <p style="color: black; font-size: 15px">M.R.P.: ₹3000<span style="text-decoration: line-through;"> </span> </p>
-                        <p style="color: black; font-size: 18px">
-                          Inclusive of all taxes
-                        </p>
-                        <button class="btn add">Buy Now</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="col-lg-6">
-            <div class="blog-item">
-              <div class="row g-0 bg-light overflow-hidden">
-                <div class="col-12 col-sm-5 h-100">
-                  <img
-                    class="img-fluid h-100"
-                    src="img/tank-6.jpg"
-                    style="object-fit: cover"
-                  />
-                </div>
-                <div
-                  class="col-9 col-sm-7 h-100 d-flex flex-column justify-content-center"
-                >
-                  <div class="p-4">
-                    <h6 class="text-uppercase mb-3">
-                        Tank Capacity 28 Liter, transparent colored
-                          16''X8''X17'' INCH
-                        </h6>
-                        <p></p>
-                        <p></p>
-                        <p style="color: red; font-size: 18px">₹ 2000</p>
-                        <p style="color: black; font-size: 15px">M.R.P.: ₹2000<span style="text-decoration: line-through;"> </span> </p>
-                        <p style="color: black; font-size: 18px">
-                          Inclusive of all taxes
-                        </p>
-                        <button class="btn add">Buy Now</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="col-lg-6">
-            <div class="blog-item">
-              <div class="row g-0 bg-light overflow-hidden">
-                <div class="col-12 col-sm-5 h-100">
-                  <img
-                    class="img-fluid h-100"
-                    src="img/tank-7.png"
-                    style="object-fit: cover"
-                  />
-                </div>
-                <div
-                  class="col-9 col-sm-7 h-100 d-flex flex-column justify-content-center"
-                >
-                  <div class="p-4">
-                    <h6 class="text-uppercase mb-3">
-                        Tank Capacity 20 Liter, 
-                          15''X8''X17'' INCH
-                        </h6>
-                        <p></p>
-                        <p></p>
-                        <p style="color: red; font-size: 18px">₹ 2000</p>
-                        <p style="color: black; font-size: 15px">M.R.P.: <span style="text-decoration: line-through;">₹2800 </span> </p>
-                        <p style="color: black; font-size: 18px">
-                          Inclusive of all taxes
-                        </p>
-                        <button class="btn add">Buy Now</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="col-lg-6">
-            <div class="blog-item">
-              <div class="row g-0 bg-light overflow-hidden">
-                <div class="col-12 col-sm-5 h-100">
-                  <img
-                    class="img-fluid h-100"
-                    src="img/tank-8.jpg"
-                    style="object-fit: cover"
-                  />
-                </div>
-                <div
-                  class="col-9 col-sm-7 h-100 d-flex flex-column justify-content-center"
-                >
-                  <div class="p-4">
-                    <h6 class="text-uppercase mb-3">
-                        Semi Round Transparent Crystal Glass round Neck Bowl ish Tank Water Jar with
-                      Lotus ( Rust Resistant, Pack of One )
-                        </h6>
-                        <p></p>
-                        <p></p>
-                        <p style="color: red; font-size: 18px">₹ 1000</p>
-                        <p style="color: black; font-size: 15px">M.R.P.: <span style="text-decoration: line-through;"> ₹2000</span> </p>
-                        <p style="color: black; font-size: 18px">
-                          Inclusive of all taxes
-                        </p>
-                        <button class="btn add">Buy Now</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+        <form class="example" action="javascript:void(0);" onsubmit="searchApiCall()">
+          <input type="text" placeholder="Search.." name="search" id="search" >
+          <button ><i class="fa fa-search" ></i></button>
+        </form>
+        <!-- <ol id="myList"></ol> -->
+        <div class="row" id="myList">
+         
+        </div>
         </div>
       </div>
     </div>
